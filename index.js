@@ -14,7 +14,7 @@ app.use(function (req, res, next) {
 });
 
 const options = ["/plain", "/html", "/xml"]
-
+// const routerOptions = []
 options.forEach(option => {
   app.get(option, (req,res) => {
     res.type(`text${option}`)
@@ -24,7 +24,7 @@ options.forEach(option => {
   })
 })
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`server is up at ${PORT}`);
 });
