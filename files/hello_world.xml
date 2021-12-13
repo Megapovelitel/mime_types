@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hello_world>
+  <headers>Hello, world!</headers>
+  <content>Xml document</content>
+</hello_world>

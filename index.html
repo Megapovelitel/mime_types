@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: auto;
+        font-family: sans-serif;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      main {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        height: calc(100% - 2rem);
+      }
+
+      section:not(:last-child) {
+        margin-right: 1rem;
+      }
+      section {
+        background: rgba(147, 187, 214, 0.158);
+        padding: 1rem;
+        border: 1px solid;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      section:last-child {
+        flex: 3;
+      }
+
+      section > div {
+        border: 1px solid rgb(13, 67, 184);
+        background: white;
+        flex: auto;
+        overflow: auto;
+      }
+      .files-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .files-content > div {
+        margin-top: 1rem;
+        display: flex;
+      }
+
+      .files-content > div:hover {
+        background: rgba(211, 211, 211, 0.479);
+      }
+
+      .files-content label {
+        flex: auto;
+        line-height: 2rem;
+      }
+
+      iframe {
+        height: calc(50% - 1rem);
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <h1>Files</h1>
+        <div class="files-content">
+          <div>
+            <input type="radio" id="txt" name="ext" value="txt" />
+            <label for="txt">Текстовый документ</label>
+          </div>
+          <div>
+            <input type="radio" id="html" name="ext" value="html" />
+            <label for="html">Html документ</label>
+          </div>
+
+          <div>
+            <input type="radio" id="pdf" name="ext" value="pdf" />
+            <label for="pdf">Pdf документ</label>
+          </div>
+
+          <div>
+            <input type="radio" id="jpg" name="ext" value="jpg" />
+            <label for="jpg">Jpg документ</label>
+          </div>
+          <div>
+            <input type="radio" id="xml" name="ext" value="xml" />
+            <label for="xml">Xml документ</label>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h1>Content</h1>
+        <div id="content">
+          <iframe></iframe>
+          <div class='results'></div>
+        </div>
+      </section>
+    </main>
+    <script>
+      const content = document.querySelector("#content");
+      const resultsNode = document.querySelector('.results')
+      const outterOptions = ["plain", "html", "xml"];
+
+      const changeSettings = async (type, options) => {
+        const _frame = document.querySelector("iframe");
+        const frame = document.createElement("iframe");
+        frame.src = `files/hello_world.${type}`;
+        content.replaceChild(frame, _frame);
+
+        const promises = outterOptions.map((option) => {
+          return fetch(`${option}?type=${type}`).then(async(res) => ({result: await res.text(), type: option}));
+        });
+
+        const results = await Promise.all(promises)
+
+        const ul = document.createElement('ul')
+        const resultNodes = results.map(({result, type}) => {
+
+          const li = document.createElement('li')
+          const title = document.createElement('h1')
+          title.innerText = `text/${type}` 
+          li.appendChild(title)
+          
+          const text = document.createElement('p')
+          text.style.maxWidth = "500px"
+          text.innerText = result 
+
+          li.appendChild(text)
+          // li.insertAdjacentHTML("beforeend", text)
+          ul.appendChild(li)
+        })
+        resultsNode.replaceChildren(ul)
+        // console.log(results)
+
+        // console.log(results.map(result => result.text()))
+      };
+
+      window.addEventListener("load", () => {
+        const inputs = document.querySelectorAll("input[name='ext']");
+        inputs.forEach((input) => {
+          input.addEventListener("change", (e) => {
+            changeSettings(e.target.id, e.target.dataset.options);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
