@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>MIME-TYPES</title>
     <style>
       * {
         box-sizing: border-box;
@@ -62,7 +62,8 @@
         display: flex;
       }
 
-      .files-content > div:hover {
+      .files-content > div:hover,
+      li:hover {
         background: rgba(211, 211, 211, 0.479);
       }
 
@@ -71,9 +72,33 @@
         line-height: 2rem;
       }
 
+      #content {
+        display: flex;
+        flex-direction: column;
+      }
+      .content {
+        flex-direction: column;
+        display: flex;
+        flex: 1;
+        padding: 0.5rem;
+      }
+      p {
+        text-align: center;
+        border-bottom: 1px solid grey;
+        padding-bottom: 0.5rem;
+      }
+
+      .container {
+        flex: auto;
+      }
       iframe {
-        height: calc(50% - 1rem);
+        height: 100%;
         width: 100%;
+      }
+
+      a {
+        margin: 0.4rem;
+        display: inline-block;
       }
     </style>
   </head>
@@ -109,55 +134,56 @@
       <section>
         <h1>Content</h1>
         <div id="content">
-          <iframe></iframe>
-          <div class='results'></div>
+          <div class="content">
+            <p>file mime-type by extension</p>
+            <div class="container">
+              <iframe id="raw-frame"></iframe>
+            </div>
+          </div>
+          <div class="content">
+            <p>links to endpoints with diff. mime-types</p>
+            <div id="links" class="container"></div>
+          </div>
         </div>
       </section>
     </main>
     <script>
       const content = document.querySelector("#content");
-      const resultsNode = document.querySelector('.results')
-      const outterOptions = ["plain", "html", "xml"];
+      const resultsNode = document.querySelector("#links");
+      const frame = document.querySelector("#raw-frame");
 
-      const changeSettings = async (type, options) => {
-        const _frame = document.querySelector("iframe");
-        const frame = document.createElement("iframe");
-        frame.src = `files/hello_world.${type}`;
-        content.replaceChild(frame, _frame);
+      const appendLinks = (links) => {
+        const ul = document.createElement("ul");
 
-        const promises = outterOptions.map((option) => {
-          return fetch(`${option}?type=${type}`).then(async(res) => ({result: await res.text(), type: option}));
+        links.forEach(({ href, text }) => {
+          const item = document.createElement("li");
+          const anch = document.createElement("a");
+          anch.href = href;
+          anch.innerText = text;
+          anch.target = "_blank";
+          item.appendChild(anch);
+          ul.appendChild(item);
         });
 
-        const results = await Promise.all(promises)
+        resultsNode.replaceChildren(ul);
+      };
 
-        const ul = document.createElement('ul')
-        const resultNodes = results.map(({result, type}) => {
+      const changeSettings = async (extension) => {
+        frame.src = `files/hello_world.${extension}`;
 
-          const li = document.createElement('li')
-          const title = document.createElement('h1')
-          title.innerText = `text/${type}` 
-          li.appendChild(title)
-          
-          const text = document.createElement('p')
-          text.style.maxWidth = "500px"
-          text.innerText = result 
+        const response = await fetch(`/link?extension=${extension}`);
+        const jsonResponse = await response.json();
+        const links = jsonResponse.links || null;
 
-          li.appendChild(text)
-          // li.insertAdjacentHTML("beforeend", text)
-          ul.appendChild(li)
-        })
-        resultsNode.replaceChildren(ul)
-        // console.log(results)
-
-        // console.log(results.map(result => result.text()))
+        if (!links) return;
+        appendLinks(links);
       };
 
       window.addEventListener("load", () => {
         const inputs = document.querySelectorAll("input[name='ext']");
         inputs.forEach((input) => {
           input.addEventListener("change", (e) => {
-            changeSettings(e.target.id, e.target.dataset.options);
+            changeSettings(e.target.id);
           });
         });
       });
