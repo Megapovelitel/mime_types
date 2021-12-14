@@ -1,11 +1,10 @@
 const mimeTypeBase = "text/";
 const mimeSubTypes = ["plain", "html", "xml"];
-const basePath = "/file";
 
 const generateLinks = (extension) => {
   const links = mimeSubTypes.map((mimeSubType) => {
     const text = mimeTypeBase + mimeSubType;
-    const href = basePath + `?extension=${extension}&subtype=${mimeSubType}`;
+    const href = `/file?extension=${extension}&subtype=${mimeSubType}`;
 
     return { text, href };
   });

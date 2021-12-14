@@ -1,6 +1,5 @@
 const express = require("express");
 const { generateLinks } = require("./links");
-// const fs = require("fs");
 
 const app = express();
 
@@ -15,24 +14,30 @@ app.use(function (req, res, next) {
   next();
 });
 
+const getFilePath = (extension) => {
+  return `${__dirname}/files/hello_world.${extension}`;
+};
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`server is up at ${PORT}`);
+});
+
 app.get("/link", (req, res) => {
   const links = generateLinks(req.query.extension);
   res.json({ links });
 });
 
 app.get("/download", (req, res) => {
-  res.download(`${__dirname}/files/hello_world.${req.query.extension}`);
+  const path = getFilePath(req.query.extension);
+  res.download(path);
 });
 
 app.get(`/file`, (req, res) => {
-  res.sendFile(`${__dirname}/files/hello_world.${req.query.extension}`, {
+  const path = getFilePath(req.query.extension);
+  res.sendFile(path, {
     headers: {
       "Content-Type": `text/${req.query.subtype}`,
     },
   });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`server is up at ${PORT}`);
 });
